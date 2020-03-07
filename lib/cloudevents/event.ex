@@ -8,7 +8,6 @@ defmodule CloudEvents.Event do
 
   @specversion "1.0"
 
-  @enforce_keys [:id, :source, :type, :specversion]
   defstruct [
     :id,
     :source,
