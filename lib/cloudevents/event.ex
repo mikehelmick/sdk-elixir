@@ -20,9 +20,36 @@ defmodule CloudEvents.Event do
     extensions: %{}
   ]
 
+  @doc """
+  Returns the the CloudEvents `id` attribute for this event.
+  """
+  @spec id(%CloudEvents.Event{}) :: String.t()
   def id(%CloudEvents.Event{id: id}), do: id
+
+  @doc """
+  Returns the CloudEvents `source` attribute as a string.
+  """
+  @spec source(%CloudEvents.Event{}) :: String.t()
   def source(%CloudEvents.Event{source: source}), do: source
+
+  @doc """
+  Returns the CloudEvents `source` attribute as a parsed %URI
+  """
+  @spec source_uri(%CloudEvents.Event{}) :: %URI{}
   def source_uri(%CloudEvents.Event{source: source}), do: URI.parse(source)
+
+  @doc """
+  Returns the CloudEvents `type` attribute.
+  """
+  @spec type(%CloudEvents.Event{}) :: String.t()
+  def type(%CloudEvents.Event{type: type}), do: type
+
+  @doc """
+  Returns the CloudEvents `datacontent` attribute.
+  If this attribute is not present, nil is returned.
+  """
+  @spec datacontenttype(%CloudEvents.Event{}) :: nil | String.t()
+  def datacontenttype(%CloudEvents.Event{type: type}), do: type
 
   @doc """
   Determines if a given `%Event{}` struct represents a valid CloudEvent.
@@ -39,6 +66,7 @@ defmodule CloudEvents.Event do
       |> validate_specversion(event)
       |> validate_type(event)
       |> validate_datacontenttype(event)
+      |> validate_dataschema(event)
 
     case length(errors) do
       0 -> :ok
@@ -99,6 +127,13 @@ defmodule CloudEvents.Event do
     else
       errors
     end
+  end
+
+  defp validate_dataschema(errors, %CloudEvents.Event{dataschema: schema}) when is_nil(schema) do
+    errors
+  end
+  defp validate_dataschema(errors, %CloudEvents.Event{dataschema: schema}) do
+    validate_string(errors, schema, "CloudEvents attribute `dataschema`, if present, must be a non-empty URI string")
   end
 
   defp valid_contenttype?(content_type) do
