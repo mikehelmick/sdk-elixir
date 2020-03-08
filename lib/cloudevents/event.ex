@@ -38,12 +38,20 @@ defmodule CloudEvents.Event do
       |> validate_source(event)
       |> validate_specversion(event)
       |> validate_type(event)
+      |> validate_datacontenttype(event)
 
     case length(errors) do
       0 -> :ok
       _ -> {:error, errors}
     end
   end
+
+  @doc """
+  Simple true/false evaluation of if an `%Event{}` struct represents a valid
+  CloudEvent. Speific error messages are not returned.
+  """
+  @spec valid?(%CloudEvents.Event{}) :: boolean()
+  def valid?(event), do: :ok == validate(event)
 
   ## Internal methods for validation.
 
@@ -78,9 +86,26 @@ defmodule CloudEvents.Event do
   defp validate_type(errors, %CloudEvents.Event{type: type}) when is_nil(type) do
     errors ++ ["CloudEvents attribute `type` must be present"]
   end
-
   defp validate_type(errors, %CloudEvents.Event{type: type}) do
     validate_string(errors, type, "CloudEvents attribute `type` must be a non-empty string")
+  end
+
+  defp validate_datacontenttype(errors, %CloudEvents.Event{datacontenttype: dct}) when is_nil(dct) do
+    errors
+  end
+  defp validate_datacontenttype(errors, %CloudEvents.Event{datacontenttype: dct}) do
+    if !String.valid?(dct) || !valid_contenttype?(dct) do
+      errors ++ ["CloudEvents attribute `datacontenttype` must be a valid RFC 2046 string if present."]
+    else
+      errors
+    end
+  end
+
+  defp valid_contenttype?(content_type) do
+    case ContentType.content_type(content_type) do
+      {:ok, _, _, _} -> true
+      _ -> false
+    end
   end
 
   defp validate_string(errors, str, message) do

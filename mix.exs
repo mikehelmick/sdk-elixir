@@ -23,7 +23,8 @@ defmodule Cloudevents.MixProject do
     [
       {:ex_doc, "~> 0.21", only: :dev, runtime: false},
       {:earmark, "~> 1.4", only: :dev},
-      {:dialyxir, "~> 0.5.1", only: [:dev]}
+      {:dialyxir, "~> 0.5.1", only: [:dev]},
+      {:content_type, "~> 0.1.0"},
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]

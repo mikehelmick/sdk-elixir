@@ -72,4 +72,23 @@ defmodule CloudEvents.EventTest do
     {:error, [message]} = CloudEvents.Event.validate(event)
     assert message == "CloudEvents attribute `type` must be a non-empty string"
   end
+
+  test "invalid datacontenttype" do
+    event = %CloudEvents.Event{
+      id: "42", specversion: "1.0", source: "foo", type: "bar", datacontenttype: "bar baz"}
+    {:error, [message]} = CloudEvents.Event.validate(event)
+    assert message == "CloudEvents attribute `datacontenttype` must be a valid RFC 2046 string if present."
+  end
+
+  test "valid json datacontenttype" do
+    event = %CloudEvents.Event{
+      id: "42", specversion: "1.0", source: "foo", type: "bar", datacontenttype: "application/json"}
+    assert :ok == CloudEvents.Event.validate(event)
+  end
+
+  test "valid xml datacontenttype" do
+    event = %CloudEvents.Event{
+      id: "42", specversion: "1.0", source: "foo", type: "bar", datacontenttype: "application/xml"}
+    assert :ok == CloudEvents.Event.validate(event)
+  end
 end
