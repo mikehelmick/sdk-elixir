@@ -91,4 +91,16 @@ defmodule CloudEvents.EventTest do
       id: "42", specversion: "1.0", source: "foo", type: "bar", datacontenttype: "application/xml"}
     assert :ok == CloudEvents.Event.validate(event)
   end
+
+  test "invalid subject, empty string" do
+    event = %CloudEvents.Event{id: "42", specversion: "1.0", source: "foo", type: "bar", subject: ""}
+    {:error, [message]} = CloudEvents.Event.validate(event)
+    assert message == "CloudEvents attribute `subject`, if present, must be a non-empty string"
+  end
+
+  test "invalid subject, non string" do
+    event = %CloudEvents.Event{id: "42", specversion: "1.0", source: "foo", type: "bar", subject: :bad}
+    {:error, [message]} = CloudEvents.Event.validate(event)
+    assert message == "CloudEvents attribute `subject`, if present, must be a non-empty string"
+  end
 end
