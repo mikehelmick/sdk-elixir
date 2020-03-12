@@ -18,16 +18,19 @@ defmodule CloudEvents.Event do
     :subject,
     :time,
     specversion: "1.0",
-    extensions: %{}
+    extensions: %{},
+    encoding_fn: nil
   ]
 
   use Accessible
+
+  import CloudEvents.Encoding
 
   @doc """
   Returns a new, uninitialized `%CloudEvents.Event{}` struct.
   """
   @spec new() :: %CloudEvents.Event{}
-  def new(), do: %CloudEvents.Event{}
+  def new(), do: %CloudEvents.Event{encoding_fn: &identity_encoding/1}
 
   @doc """
   Returns the the CloudEvents `id` attribute for this event.
@@ -69,6 +72,9 @@ defmodule CloudEvents.Event do
   @spec with_type(%CloudEvents.Event{}, String.t()) :: %CloudEvents.Event{}
   def with_type(event, type), do: %{event | type: type}
 
+  @spec specversion(%CloudEvents.Event{}) :: String.t()
+  def specversion(%CloudEvents.Event{specversion: sv}), do: sv
+
   @doc """
   Returns the CloudEvents `datacontent` attribute.
   If this attribute is not present, nil is returned.
@@ -78,6 +84,39 @@ defmodule CloudEvents.Event do
 
   @spec with_datacontenttype(%CloudEvents.Event{}, String.t()) :: %CloudEvents.Event{}
   def with_datacontenttype(event, dct), do: %{event | datacontenttype: dct}
+
+  @doc """
+  Returns the CloudEvents 'data' attribute without decoding.
+  If this attribute is not present, nil is returned.
+  """
+  @spec data(%CloudEvents.Event{}) :: nil | any()
+  def data(%CloudEvents.Event{data: data}), do: data
+
+  def data_encoded(%CloudEvents.Event{encoding_fn: fun, data: data}) when is_nil(fun) do
+    data
+  end
+
+  def data_encoded(%CloudEvents.Event{encoding_fn: fun, data: data}) do
+    fun.(data)
+  end
+
+  @doc """
+  Sets the data payload with no encoding function
+  """
+  @spec with_data(%CloudEvents.Event{}, any()) :: %CloudEvents.Event{}
+  def with_data(event, data), do: %{event | data: data}
+
+  @doc """
+  Encodes the set data as a JSON object when sending.
+  """
+  @spec with_data_json_encoding(%CloudEvents.Event{}) :: %CloudEvents.Event{}
+  def with_data_json_encoding(event) do
+    %{event | datacontenttype: "application/json", encoding_fn: &json_encoding/1}
+  end
+
+  def with_data_binary_encoding(event) do
+    %{event | datacontenttype: "text/plain", encoding_fn: &base64_encoding/1}
+  end
 
   @doc """
   Returns the CloudEvents `datacontenttype` attribute as parsed by
@@ -182,7 +221,7 @@ defmodule CloudEvents.Event do
 
   defp valid_extension?(ext) do
     if String.valid?(ext) do
-      String.match?("test123A", ~r/^([[:lower:]]|[[:digit:]])+$/u)
+      String.match?(ext, ~r/^([[:lower:]]|[[:digit:]])+$/u)
     else
       false
     end
