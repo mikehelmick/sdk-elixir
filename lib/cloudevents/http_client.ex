@@ -17,6 +17,7 @@ defmodule CloudEvents.HTTPClient do
                 |> Map.put("Content-Type", "application/cloudevents+json")
 
               # Transform struct for safe encoding.
+              # - remove extensions + non encoded information from struct
               ext = extensions(event)
 
               eventMap =
@@ -24,6 +25,7 @@ defmodule CloudEvents.HTTPClient do
                 |> Map.delete(:__struct__)
                 |> Map.delete(:extensions)
 
+              # Pull each extension attribute to a top level key for JSON encoding
               eventMap =
                 List.foldl(Map.to_list(ext), eventMap, fn {k, v}, m -> Map.put(m, k, v) end)
 
