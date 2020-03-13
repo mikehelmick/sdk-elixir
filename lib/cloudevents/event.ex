@@ -162,6 +162,13 @@ defmodule CloudEvents.Event do
     %{event | time: DateTime.to_iso8601(DateTime.utc_now())}
   end
 
+  @spec extensions(%CloudEvents.Event{}) :: nil | map()
+  def extensions(%CloudEvents.Event{extensions: ext}), do: ext
+
+  def delete_extension(event = %CloudEvents.Event{extensions: ext}, extension) do
+    %{event | extensions: Map.delete(ext, extension)}
+  end
+
   @doc """
   Returns an extension attribute by key. All extensions are returned as their
   `String.t()` representation. `nil` is returned if the extension attribute
