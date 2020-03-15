@@ -18,6 +18,8 @@ defmodule CloudEvents.HTTPClient do
               CloudEvents.HTTPEncoder.binary(event)
           end
 
+        headers = Map.put(headers, "user-agent", "cloudevents/sdk-elixir")
+
         case HTTPoison.put(url, body, headers) do
           {:ok, response} -> {:ok, response}
           {:error, err} -> {:error, err}
