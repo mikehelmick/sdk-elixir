@@ -58,7 +58,6 @@ defmodule CloudEvents.HTTPServer do
         {:ok, body, conn} = read_body(conn, length: 11_000_000)
 
         headers = Map.new(conn.req_headers)
-        IO.puts("HEADERS: #{inspect(headers)}")
 
         case(CloudEvents.HTTPDecoder.decode(headers, body)) do
           {:ok, event} ->

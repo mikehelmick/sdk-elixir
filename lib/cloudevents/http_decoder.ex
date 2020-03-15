@@ -36,16 +36,14 @@ defmodule CloudEvents.HTTPDecoder do
       # Set the data to be the content of the body or, if application/json
       # assist with decoding it.
       event =
-        with_data(
-          event,
-          case datacontenttype(event) do
-            "application/json" ->
-              CloudEvents.Encoding.json_decode(body)
+        case datacontenttype(event) do
+          "application/json" ->
+            with_data(event, CloudEvents.Encoding.json_decode(body))
+            |> with_data_json_encoding()
 
-            _ ->
-              body
-          end
-        )
+          _ ->
+            with_data(event, body)
+        end
 
       {:ok, event}
     end

@@ -59,10 +59,27 @@ iex(5)>
 ```
 
 3. `CloudEvents.HTTPServer` defines a server for receiving HTTP CloudEvents.
-   To start an example server, run iex: `iex -S mix`
+   Example of running a service in `iex -S mix` and receiving a CloudEvent
+   with the stdout logging handler (`PrintHandler`).
 
 ```elixir
-CloudEvents.HTTPServer.serve(CloudEvents.Example.PrintHandler)
+iex(1)> CloudEvents.HTTPServer.serve(CloudEvents.Example.PrintHandler)
+{:ok, #PID<0.302.0>}
+Received CloudEvent:
+%CloudEvents.Event{
+  data: %{"age" => 42, "firstname" => "Steve", "lastname" => "Service"}, datacontenttype: "application/json",
+  dataschema: "http://scehams.in-the-cloud.dev/awesome",
+  encoding_fn: &CloudEvents.Encoding.json_encoding/1,
+  extensions: %{},
+  id: "42",
+  source: "/awesome/file/path",
+  specversion: "1.0",
+  subject: "math",
+  time: "2020-03-15T23:02:51.706597Z",
+  type: "com.example.awesome"}
+----------
+
+iex(2)>
 ```
 
 ## Still TODO
