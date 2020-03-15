@@ -75,6 +75,11 @@ defmodule CloudEvents.Event do
   @spec specversion(%CloudEvents.Event{}) :: String.t()
   def specversion(%CloudEvents.Event{specversion: sv}), do: sv
 
+  @spec with_specversion(%CloudEvents.Event{}, String.t()) :: %CloudEvents.Event{}
+  def with_specversion(event = %CloudEvents.Event{}, sv) do
+    %{event | specversion: sv}
+  end
+
   @doc """
   Returns the CloudEvents `datacontent` attribute.
   If this attribute is not present, nil is returned.

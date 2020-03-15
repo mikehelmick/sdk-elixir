@@ -7,10 +7,16 @@ defmodule CloudEvents.Encoding do
   end
 
   def json_decode(json) do
-    Poison.decode(json)
+    {:ok, data} = Poison.decode(json)
+    data
   end
 
   def base64_encoding(x) do
     Base.encode64(x)
+  end
+
+  def base64_decoding(x) do
+    {:ok, data} = Base.decode64(x)
+    data
   end
 end
