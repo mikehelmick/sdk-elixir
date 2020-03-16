@@ -13,7 +13,7 @@ defmodule CloudEvents.HTTPEncoderTest do
     {headers, body} = CloudEvents.HTTPEncoder.structured(event)
 
     assert 1 == length(Map.keys(headers))
-    assert "application/cloudevents+json" = Map.get(headers, "Content-Type")
+    assert "application/cloudevents+json" = Map.get(headers, "content-type")
 
     {:ok, decoded} = Poison.decode(body)
     assert 4 == length(Map.keys(decoded))

@@ -4,8 +4,9 @@ An Elixir SDK for processing CloudEvents. Conforms to the CloudEvents 1.0 spec.
 
 ## Status
 
-TL;DR - Event module for manipulating events,  working HTTP client for both
-binary and structured CloudEvents, working server for binary encoding.
+TL;DR - Event module for manipulating events, working HTTP client for both
+binary and structured CloudEvents, working server for both structured and
+binary encoding.
 
 1. `CloudEvents.Event` module defines the structure of a CloudEvent. Provides
    encoding for JSON and binary data payloads.
@@ -84,15 +85,13 @@ iex(2)>
 
 ## Still TODO
 
-1. Receiving of structured encoding for CloudEvents over HTTP
+1. Implement handling of responses for both client and server.
 
-2. Better handling of HTTP responses on the HTTP Client
+2. Complete unit testing
 
-3. Complete unit testing
+3. Complete Documentation
 
-4. Complete Documentation
-
-5. Examples for using CloudEvents over HTTP with this SDK
+4. Examples for using CloudEvents over HTTP with this SDK
 
 ## Installation
 

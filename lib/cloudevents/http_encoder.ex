@@ -4,7 +4,7 @@ defmodule CloudEvents.HTTPEncoder do
   def structured(event = %CloudEvents.Event{}) do
     headers =
       Map.new()
-      |> Map.put("Content-Type", "application/cloudevents+json")
+      |> Map.put("content-type", "application/cloudevents+json")
 
     # Transform struct for safe encoding.
     # - remove extensions + non encoded information from struct

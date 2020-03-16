@@ -1,4 +1,5 @@
 defmodule CloudEvents.HTTPDecoder do
+  require Logger
   import CloudEvents.Event
 
   def decode(headers, body) do
@@ -11,8 +12,51 @@ defmodule CloudEvents.HTTPDecoder do
     end
   end
 
-  def structured(_headers, _body) do
-    {:error, :not_implemented}
+  def structured(headers, body) do
+    if headers["content-type"] == "application/cloudevents+json" do
+      case Poison.decode(body) do
+        {:ok, json} ->
+          # transform structured encoding to look more like binary
+          # drop the data atrribute, so it doesn't become an extension.
+          data = Map.get(json, "data")
+          json = Map.delete(json, "data")
+
+          bin_headers =
+            Map.to_list(json)
+            |> Enum.map(fn {k, v} -> {"ce-#{k}", v} end)
+            |> Map.new()
+
+          {event, bin_headers} =
+            process_bin_headers({CloudEvents.Event.new(), bin_headers})
+            |> bin_add_optional(
+              "ce-datacontenttype",
+              fn event, data -> with_datacontenttype(event, data) end
+            )
+
+          event = bin_add_extensions(event, Map.to_list(bin_headers))
+
+          event =
+            if(data != nil) do
+              case datacontenttype(event) do
+                "application/json" ->
+                  with_data(event, data)
+                  |> with_data_json_encoding()
+
+                _ ->
+                  with_data(event, data)
+              end
+            end
+
+          {:ok, event}
+
+        {:error, reason} ->
+          Logger.error("Unable to parse json body, #{inspect(reason)}")
+          {:error, reason}
+      end
+    else
+      Logger.error("content-type is not `application/cloudevents+json`")
+      {:error, :not_cloudevent}
+    end
   end
 
   def binary(headers, body) do
@@ -20,16 +64,7 @@ defmodule CloudEvents.HTTPDecoder do
          headers["ce-type"] == nil || headers["ce-specversion"] == nil do
       {:error, :not_binary_cloudevent}
     else
-      {event, headers} =
-        {CloudEvents.Event.new(), headers}
-        |> bin_add_id()
-        |> bin_add_source()
-        |> bin_add_type()
-        |> bin_add_specversion()
-        |> bin_add_contenttype()
-        |> bin_add_schema()
-        |> bin_add_subject()
-        |> bin_add_time()
+      {event, headers} = process_bin_headers({CloudEvents.Event.new(), headers})
 
       event = bin_add_extensions(event, Map.to_list(headers))
 
@@ -47,6 +82,18 @@ defmodule CloudEvents.HTTPDecoder do
 
       {:ok, event}
     end
+  end
+
+  defp process_bin_headers({event, headers}) do
+    {event, headers}
+    |> bin_add_id()
+    |> bin_add_source()
+    |> bin_add_type()
+    |> bin_add_specversion()
+    |> bin_add_contenttype()
+    |> bin_add_schema()
+    |> bin_add_subject()
+    |> bin_add_time()
   end
 
   defp bin_add_id({event, headers}) do
