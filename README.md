@@ -83,15 +83,19 @@ Received CloudEvent:
 iex(2)>
 ```
 
+4. `CloudEvents.Example.TransformHandler` shows an example of a handler function
+    that replies with a new CloudEvent. The `CloudEvents.HTTPServer` will
+    send a single reply event as part of the HTTP response.
+
 ## Still TODO
 
-1. Implement handling of responses for both client and server.
+1. Implement handling of responses in the client.
 
 2. Complete unit testing
 
 3. Complete Documentation
 
-4. Examples for using CloudEvents over HTTP with this SDK
+4. Publish v0.1 to Hex.pm
 
 ## Installation
 

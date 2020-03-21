@@ -63,8 +63,34 @@ defmodule CloudEvents.HTTPServer do
           {:ok, event} ->
             case validate(event) do
               :ok ->
-                handler.handle_event(event, conn: conn)
-                conn |> put_resp_content_type("text/plain") |> send_resp(202, "")
+                case handler.handle_event(event, conn: conn) do
+                  :ok ->
+                    conn |> put_resp_content_type("text/plain") |> send_resp(202, "")
+
+                  {:reply, reply_event} when is_struct(reply_event) ->
+                    # TODO: Elixir 1.11 will allow for validation of a specific struct
+                    case valid?(reply_event) do
+                      true ->
+                        {headers, body} = CloudEvents.HTTPEncoder.binary(reply_event)
+
+                        conn = List.foldl(Map.to_list(headers), conn,
+                           fn {k, v}, conn -> put_resp_header(conn, k, v) end)
+                        send_resp(conn, 200, body)
+
+                      false ->
+                        {:error, errors} = validate(reply_event)
+                        Logger.error("Tried to reply with invalid event: \nCloudEvent #{inspect(reply_event)}\nError: #{inspect(errors)}")
+                        conn
+                        |> put_resp_content_type("text/plain")
+                        |> send_resp(500, "internal server error.")
+                    end
+
+                  {:error, reason} ->
+                    Logger.error("Invoke filed with error: #{inspect(reason)}")
+                    conn
+                    |> put_resp_content_type("text/plain")
+                    |> send_resp(500, "#{inspect(reason)}")
+                end
 
               {:error, errors} ->
                 Logger.error("Invalid CloudEvent received: #{inspect(errors)}")
