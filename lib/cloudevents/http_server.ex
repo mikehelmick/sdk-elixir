@@ -55,7 +55,7 @@ defmodule CloudEvents.HTTPServer do
         conn |> put_resp_content_type("text/plain") |> send_resp(404, "not found.")
 
       handler ->
-        {:ok, body, conn} = read_body(conn, length: 11_000_000)
+        {:ok, body, conn} = read_body(conn, length: 100_000)
 
         headers = Map.new(conn.req_headers)
 
